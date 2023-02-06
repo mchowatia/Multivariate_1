@@ -1,0 +1,78 @@
+---
+title: "MVA_Homework1"
+author: "mc2611@rutgers.edu"
+date: "2023-02-05"
+output: html_document
+---
+
+```{r}
+
+library(readr)
+Bumpus_sparrows <- read_csv("C:/Users/muska/Downloads/Bumpus_sparrows.csv")
+Bumpus_sparrows
+sparr <- Bumpus_sparrows
+class(sparr)
+
+#Splitting survived and non-survived sparrows
+
+surv<-sparr[sparr[,"Survivorship"]=="S",]
+nonsurv <- sparr[sparr[,"Survivorship"]=="NS",]
+
+class(surv)
+
+#Converting the split dataframe into 2 matrices
+
+surv_mat <- data.matrix(surv)
+class(surv_mat)
+
+nonsurv_mat <- data.matrix(nonsurv)
+class(nonsurv_mat)
+
+#Dropping col 1 from survived and non-survived matrices as it does not contain number
+
+sparr_surv <- surv_mat[,-1]
+sparr_surv
+
+sparr_nsurv <- nonsurv_mat[,-1]
+sparr_nsurv
+
+#Calculating ColMeans, RowMeans for Survived Sparrows
+
+col_means <- colMeans(sparr_surv)
+row_means <- rowMeans(sparr_surv)
+means <- mean(sparr_surv)
+
+col_means
+row_means
+means
+
+#Calculating ColMeans, RowMeans for Non-Survived Sparrows
+
+ncol_means <- colMeans(sparr_nsurv)
+nrow_means <- rowMeans(sparr_nsurv)
+nmeans <- mean(sparr_nsurv)
+
+ncol_means
+nrow_means
+nmeans
+
+#Calculating the Covariance and Correlation for Survived sparrows
+
+cov(sparr_surv)
+cor(sparr_surv)
+
+#After calculating the correlation of survived sparrows a diagonal matrix has been observed and any of the two variables from the matrix are not strongly correlated as the range is near to 0. 
+
+#Calculating the Covariance and Correlation for Non-survived sparrows
+
+cov(sparr_nsurv)
+cor(sparr_nsurv)
+
+#After calculating the covariance of Non-survived sparrows, it is observed that covariance between 2 different variables (Alar_Extent, Total_length) is higher which indicates that they are highly dependent on each other.
+
+#After calculating the correlation of Non-survived sparrows it is observed that any of the two variables from the matrix are not strongly correlated as the range is near to 0. 
+
+
+```
+
+
