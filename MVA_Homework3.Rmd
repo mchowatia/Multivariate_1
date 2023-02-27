@@ -1,0 +1,302 @@
+---
+title: "MuskanChowatia_HW3"
+author: "mc2611@rutgers.edu"
+date: "2023-02-27"
+output: html_document
+---
+
+```{r}
+library(readr)
+Forest_Fire <- read_csv("C:/Users/muska/Downloads/Algerian_forest_fires_dataset_UPDATE.csv")
+Forest_Fire
+fire <- Forest_Fire
+class(fire)
+
+str(fire)
+attach(fire)
+
+#Visualizations
+fire_boxplot <- boxplot(fire[,1:8])
+fire_boxplot
+
+#Plots
+fire.data <- data.frame(as.numeric(rownames(fire)),fire[,1:8])
+labs.diagonal <- c("day","month","Temperature","RH","Ws","Rain","FFMC","DMC")
+
+plot(Temperature, day,xlab="Temperature (degree celcius)",ylab="day",pch=c(16,1))
+
+# Correlations
+pairs(fire[,1:8])
+
+# A Different View on Correlation Matrix
+library(SciViews)
+pairs(fire.data, diag.panel = panel.boxplot, labels=labs.diagonal,pch=c(1,16),font.labels=2)
+
+# 3 Dimensional Plots
+library(scatterplot3d)
+s3d <- scatterplot3d(Temperature,day,month,pch=c(1,16)[as.numeric(Classes)],xlab="Temperature", ylab="", angle=45,zlab="month", lty.hide=2,type="h",y.margin.add=0.1,font.axis=2,font.lab=2)
+legend(s3d$xyz.convert(238, 160, 34.1),c("fire","not fire"),pch=c(1,16),text.font=2)
+
+# Scatter Plot Matrix
+library(car)
+scatterplotMatrix(~day+month+Temperature+RH+Ws+Rain+FFMC+DMC | Classes, data=fire.data, var.labels=labs.diagonal,cex.labels=0.7, diagonal="boxplot",smooth=FALSE,reg.line=FALSE,pch=c(1,16),col=rep("black",2), legend.plot=FALSE)
+
+library(lattice)
+super.sym <- trellis.par.get("superpose.symbol")
+super.sym$superpose.symbol$pch <- c(1,16,rep(1,5))
+super.sym$superpose.symbol$col <- rep("#000000",7)
+trellis.par.set(super.sym)
+splom(~fire.data, groups = Classes, data = fire.data, ps=0.5, varname.cex = .5,panel = panel.superpose,key = list(columns = 2,points = list(pch = super.sym$pch[1:2], col=super.sym$col[1:2]),text = list(c("fire", "not fire"))))
+
+# load packages
+library(lattice)
+library(ggplot2)
+library(ggridges)
+library(ggvis)
+library(ggthemes)
+library(cowplot)
+library(gapminder)
+library(gganimate)
+library(dplyr)
+library(tidyverse)
+library(grid)
+library(gridExtra)
+library(RColorBrewer)
+
+# ggplot
+ggplot(fire, aes(x=day,y=Temperature)) + geom_point()
+
+ggplot(fire, aes(x=day,y=Temperature)) + facet_wrap(month) + geom_point()
+
+ggplot(fire, aes(x=day,y=Temperature)) + xlim(0,10) + geom_point(colour="steelblue", pch=3) + 
+  labs(x="day", y="Temperature in degree celcius", title="Fire Data") 
+
+# bar chart
+ggplot(fire, aes(Temperature)) + geom_bar(position="stack") 
+ggplot(fire, aes(day) )+ geom_bar(position="stack") 
+ggplot(fire, aes(day)) + facet_grid(.~Temperature) + geom_bar(position="dodge")
+
+# histogram
+ggplot(fire, aes(RH))+geom_histogram()
+ggplot(fire, aes(RH))+geom_histogram(aes(fill = after_stat(count)))
+
+# regression
+ggplot(fire, aes(x=day, y=Temperature)) + geom_point() + geom_smooth(method=lm)
+ggplot(fire, aes(x=day, y=Temperature)) + geom_point() + stat_smooth()
+
+# violin plot 
+ggplot(fire, aes(x=day, y=Temperature)) + geom_violin()
+
+# box plot
+ggplot(fire, aes(x=day, y=Temperature)) + geom_boxplot()
+ggplot(fire, aes(x=day, y=Temperature)) + geom_boxplot() + coord_flip()
+
+# density plot and ggridges
+ggplot(fire, aes(x=Temperature)) + geom_density() 
+ggplot(fire, aes(x=Temperature, fill=month, color=month)) + geom_density() 
+ggplot(fire, aes(x=Temperature, fill=day, color=day)) + geom_density(alpha=0.3, aes(y=..scaled..)) 
+ggplot(fire, aes(x=Temperature)) + geom_density() 
+
+# hexbin
+ggplot(fire, aes(x=RH, y=Temperature)) + geom_hex() 
+
+# with ggthemes (see also ggsci, ggthemr)
+lastplot <- ggplot(fire, aes(x=day,y=Temperature)) + xlim(0,10) + geom_point(aes(color=month)) + stat_smooth() + 
+  labs(x="day", y="temperature in degree celsius", title="Fire Data") 
+
+lastplot + theme_bw()
+lastplot + theme_cowplot()
+lastplot + theme_dark()
+lastplot + theme_economist()
+lastplot + theme_fivethirtyeight()
+lastplot + theme_tufte()
+lastplot + theme_wsj()
+
+#Mean Distance Significance
+fire$Classes <- as.factor(fire$Classes)
+fire_x <- fire[,1:8]
+fire_x
+fire_cm <- colMeans(fire_x)
+fire_S <- cov(fire_x)
+fire_cm
+fire_S
+
+
+# t-tests, one by one. Survivors vs. Non survivors
+with(data=fire,t.test(day[Classes=="fire"],day[Classes=="not fire"],var.equal=TRUE))
+with(data=fire,t.test(month[Classes=="fire"],month[Classes=="not fire"],var.equal=TRUE))
+with(data=fire,t.test(Temperature[Classes=="fire"],Temperature[Classes=="not fire"],var.equal=TRUE))
+with(data=fire,t.test(RH[Classes=="fire"],RH[Classes=="not fire"],var.equal=TRUE))
+with(data=fire,t.test(Ws[Classes=="fire"],Ws[Classes=="not fire"],var.equal=TRUE))
+with(data=fire,t.test(Rain[Classes=="fire"],Rain[Classes=="not fire"],var.equal=TRUE))
+with(data=fire,t.test(FFMC[Classes=="fire"],FFMC[Classes=="not fire"],var.equal=TRUE))
+with(data=fire,t.test(DMC[Classes=="fire"],DMC[Classes=="not fire"],var.equal=TRUE))
+
+library(Hotelling)
+t2testfire <- hotelling.test(day + month + Temperature + RH + Ws + Rain + FFMC + DMC ~ Classes, data=fire)
+cat("T2 statistic =",t2testfire$stat[[1]],"\n")
+print(t2testfire)
+
+matstand <- scale(fire[,1:8])
+matstand
+matfire <- matstand[Classes == "fire",]
+matfire
+matnofire <- matstand[Classes == "not fire",]
+vecmedianfire <- apply(matfire, 2, median)
+vecmedianfire
+
+vecmediannofire <- apply(matnofire, 2, median)
+matabsdevfire <- abs(matfire - matrix(rep(vecmedianfire,nrow(matfire)),nrow=nrow(matfire), byrow=TRUE))
+
+matabsdevnofire <- abs(matnofire - matrix(rep(vecmediannofire,nrow(matnofire)),nrow=nrow(matnofire), byrow=TRUE))
+
+matabsdev.all <- rbind(matabsdevfire,matabsdevnofire)
+
+matstand
+
+matstand.all <- data.frame(Classes, matstand)
+colnames(matstand.all) <- colnames(fire[1:8])
+t2testfire <- hotelling.test(day + month + Temperature + RH + Ws + Rain + FFMC + DMC ~ Classes,data=fire)
+cat("T2 statistic =",t2testfire$stat[[1]],"\n")
+print(t2testfire)
+
+library(car)
+leveneTest(day ~ Classes, data=fire)
+leveneTest(month ~ Classes, data=fire)
+leveneTest(Temperature ~ Classes, data=fire)
+leveneTest(RH ~ Classes, data=fire)
+leveneTest(Ws ~ Classes, data=fire)
+leveneTest(Rain ~ Classes, data=fire)
+leveneTest(FFMC ~ Classes, data=fire)
+leveneTest(DMC ~ Classes, data=fire)
+
+
+# ANOVA
+summary(aov(day ~ Classes))
+summary(aov(month ~ Classes))
+summary(aov(Temperature ~ Classes))
+summary(aov(RH ~ Classes))
+summary(aov(Ws ~ Classes))
+summary(aov(Rain ~ Classes))
+summary(aov(FFMC ~ Classes))
+summary(aov(DMC ~ Classes))
+
+# BoxM
+
+library(biotools)
+boxM(fire[,1:8],Classes)
+
+#PCA
+cor(fire[,7])
+fire_pca <- prcomp(fire[,7],scale=TRUE)
+fire_pca
+summary(fire_pca)
+
+(eigen_fire <- fire_pca$sdev^2)
+names(eigen_fire) <- paste("PC",1,sep="")
+eigen_fire
+sumlambdas <- sum(eigen_fire)
+sumlambdas
+propvar <- eigen_fire/sumlambdas
+propvar
+cumvar_fire <- cumsum(propvar)
+cumvar_fire
+matlambdas <- rbind(eigen_fire,propvar,cumvar_fire)
+rownames(matlambdas) <- c("Eigenvalues","Prop. variance","Cum. prop. variance")
+round(matlambdas,4)
+summary(fire_pca)
+fire_pca$rotation
+print(fire_pca)
+
+fire_pca$x
+
+# Identifying the scores by the fire status
+firetyp_pca <- cbind(data.frame(Classes),fire_pca$x)
+firetyp_pca
+t.test(PC1~fire$Classes,data=firetyp_pca)
+## F ratio tests
+var.test(PC1~fire$Classes,data=firetyp_pca)
+# Levene's tests (one-sided)
+library(car)
+(LTPC1 <- leveneTest(PC1~fire$Classes,data=firetyp_pca))
+(p_PC1_1sided <- LTPC1[[3]][1]/2)
+print(summary(fire_pca))
+diag(cov(fire_pca$x))
+xlim <- range(fire_pca$x[,1])
+fire_pca$x[,1]
+fire_pca$x
+plot(fire_pca$x,xlim=xlim,ylim=xlim)
+fire_pca$rotation[,1]
+fire_pca$rotation
+plot(fire[,-1])
+fire_pca$x
+#get the original value of the data based on PCA
+center <- fire_pca$center
+scale <- fire_pca$scale
+new_fire <- as.matrix(fire[,-1])
+new_fire
+predict(fire_pca)[,1]
+# Better Ways to Visualize
+
+library(factoextra)
+library(FactoMineR)
+library(ggfortify)
+library(psych)
+library(corrplot)
+library(devtools)
+
+# Correlation
+pairs.panels(fire[,-1],
+             gap = 0,
+             bg = c("red", "blue")[fire$Classes],
+             pch=21)
+fviz_eig(fire_pca, addlabels = TRUE)
+# Different PCA Method. 
+res.pca <- PCA(fire[,7], graph = FALSE)
+print(res.pca)
+
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 50))
+
+var <- get_pca_var(res.pca)
+
+var
+
+# Coordinates
+head(var$coord)
+# Cos2: quality on the factore map
+head(var$cos2)
+# Contributions to the principal components
+head(var$contrib)
+fviz_cos2(res.pca, choice = "var", axes = 1)
+# Description of PC
+
+res.desc <- dimdesc(res.pca, axes = c(1), proba = 0.05)
+# Description of dimension 1
+res.desc$Dim.1
+# Graph of Indiviuals
+ind <- get_pca_ind(res.pca)
+ind
+# Coordinates of individuals
+head(ind$coord)
+# Quality of individuals
+head(ind$cos2)
+# Contributions of individuals
+head(ind$contrib)
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
